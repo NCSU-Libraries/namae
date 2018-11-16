@@ -56,6 +56,7 @@ module Namae
         expect(Name.new(:given => 'EA').normalize_initials.given).to eq('E.A.')
         expect(Name.new(:given => 'JFK').normalize_initials.given).to eq('J.F.K.')
         expect(Name.new(:given => 'E-A').normalize_initials.given).to eq('E.-A.')
+        expect(Name.new(:given => 'E. -A.').normalize_initials.given).to eq('E.-A.')
       end
     end
 

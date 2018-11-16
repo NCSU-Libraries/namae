@@ -107,11 +107,12 @@ require 'strscan'
   @defaults = {
     :debug => false,
     :prefer_comma_as_separator => false,
+    :prefer_muhammad_abbreviation => true,
     :comma => ',',
     :stops => ',;',
     :separator => /\s*(\band\b|\&|;)\s*/i,
-    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon|deaconess|father|fr|rabbi|cantor|vicar|prof|dr|md|ph\.?d)\.?)(\s+|$)/i,
-    :suffix => /\s*\b(JR|Jr|jr|SR|Sr|sr|[IVX]{2,})(\.|\b)/,
+    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon|deaconess|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|,|$)/i,
+    :suffix => /\s*\b(JR|SR|[IVX]{2,})(\.|\b)/i,
     :appellation => /\s*\b((mrs?|ms|fr|hr)\.?|miss|herr|frau)(\s+|$)/i
   }
 
@@ -159,6 +160,10 @@ require 'strscan'
 
   def prefer_comma_as_separator?
     options[:prefer_comma_as_separator]
+  end
+
+  def prefer_muhammad_abbreviation?
+    options[:prefer_muhammad_abbreviation]
   end
 
   def parse(string)
@@ -209,7 +214,7 @@ require 'strscan'
 
     case type
     when :UWORD
-      @initials += 1 if word =~ /^[[:upper:]]+\b/
+      @initials += 1 if word =~ /^-?[[:upper:]]+\b/
     when :SUFFIX
       @suffices += 1
     end
@@ -230,7 +235,7 @@ require 'strscan'
   end
 
   def will_see_initial?
-    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^[[:upper:]]+\b/
+    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^-?[[:upper:]]+\b/
   end
 
   def seen_full_name?
@@ -253,7 +258,13 @@ require 'strscan'
     when input.scan(/\s+/)
       next_token
     when input.scan(title)
-      consume_word(:TITLE, input.matched.strip)
+      matched = input.matched.strip
+      # Checks for common Muhammad abbreviation "Md"
+      if matched == 'Md' and prefer_muhammad_abbreviation?
+        consume_word(:PWORD, matched)
+      else
+        consume_word(:TITLE, matched)
+      end
     when input.scan(suffix)
       consume_word(:SUFFIX, input.matched.strip)
     when input.scan(appellation)
@@ -262,7 +273,7 @@ require 'strscan'
       else
         consume_word(:UWORD, input.matched)
       end
-    when input.scan(/((\\\w+)?\{[^\}]*\})*[[:upper:]][^\s#{stops}]*/)
+    when input.scan(/((\\\w+)?\{[^\}]*\})*-?[[:upper:]][^\s#{stops}]*/)
       consume_word(:UWORD, input.matched)
     when input.scan(/((\\\w+)?\{[^\}]*\})*[[:lower:]][^\s#{stops}]*/)
       consume_word(:LWORD, input.matched)
