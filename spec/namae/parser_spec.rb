@@ -89,7 +89,7 @@ module Namae
           end
         end
 
-        %w{Ph.D. PhD PHD Dr. Dr Prof.}.each do |title|
+        %w{Ph.D. PhD PHD Dr. Dr Prof. Esq. MD MPH M.P.H.,}.each do |title|
           describe "the next token is #{title.inspect}" do
             before { parser.send(:input).string = title }
             it 'returns a TITLE token' do

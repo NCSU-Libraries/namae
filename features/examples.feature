@@ -22,6 +22,9 @@ Feature: Parse the names in the Readme file
       | Augusta Ada King             | Augusta Ada  |          | King         |        |           |             |      |
       | Julia Herr                   | Julia        |          | Herr         |        |           |             |      |
       | Herr, Julia                  | Julia        |          | Herr         |        |           |             |      |
+      | Bert A van der Reijden       | Bert A       | van der  | Reijden      |        |           |             |      |
+      | Ameeduzzafar                 | Ameeduzzafar |          |              |        |           |             |      |
+      | Femke A. M. V. I. Hellenthal | Femke A. M. V. I.|      | Hellenthal   |        |           |             |      |
 
     @readme @sort
     Scenarios: Readme examples (sort-order)
