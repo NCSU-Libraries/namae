@@ -16,6 +16,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
   @defaults = {
     :debug => false,
     :prefer_comma_as_separator => false,
+    :prefer_muhammad_abbreviation => true,
     :comma => ',',
     :stops => ',;',
     :separator => /\s*(\band\b|\&|;)\s*/i,
@@ -68,6 +69,10 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
 
   def prefer_comma_as_separator?
     options[:prefer_comma_as_separator]
+  end
+
+  def prefer_muhammad_abbreviation?
+    options[:prefer_muhammad_abbreviation]
   end
 
   def parse(string)
@@ -162,7 +167,13 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
     when input.scan(/\s+/)
       next_token
     when input.scan(title)
-      consume_word(:TITLE, input.matched.strip)
+      matched = input.matched.strip
+      # Checks for common Muhammad abbreviation "Md"
+      if matched == 'Md' and prefer_muhammad_abbreviation?
+        consume_word(:PWORD, matched)
+      else
+        consume_word(:TITLE, matched)
+      end
     when input.scan(suffix)
       consume_word(:SUFFIX, input.matched.strip)
     when input.scan(appellation)

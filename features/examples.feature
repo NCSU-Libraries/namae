@@ -25,12 +25,13 @@ Feature: Parse the names in the Readme file
       | Bert A van der Reijden       | Bert A       | van der  | Reijden      |        |           |             |      |
       | Ameeduzzafar                 | Ameeduzzafar |          |              |        |           |             |      |
       | Femke A. M. V. I. Hellenthal | Femke A. M. V. I.|      | Hellenthal   |        |           |             |      |
+      | Cai, W. -J.                  | W. -J.       |          | Cai          |        |           |             |      |
+      | Hasnat, Md Mehedi            | Md Mehedi    |          | Hasnat       |        |           |             |      |
 
     @readme @sort
     Scenarios: Readme examples (sort-order)
       | name                         | given        | particle | family           | suffix | title | appellation | nick |
       | Carreño Quiñones, María-Jose | María-Jose   |          | Carreño Quiñones |        |       |             |      |
-      | Cai, W. -J.                  | W. -J.       |          | Cai          |        |           |             |      |
 
     @issues @appellation @nick @suffix
     Scenarios: Nicknames Appellations and Suffices
