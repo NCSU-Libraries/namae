@@ -163,11 +163,12 @@ The Namae source code is [hosted on GitHub](https://github.com/berkmancenter/nam
 You can check out a copy of the latest code using Git:
 
     $ git clone https://github.com/berkmancenter/namae.git
+    $ cd namae
+    $ bundle install
 
 To get started, generate the parser and run all tests:
 
-    $ cd namae
-    $ bundle install
+    $ racc -olib/namae/parser.rb lib/namae/parser.y
     $ bundle exec rake features
     $ bundle exec rake spec
 
