@@ -118,7 +118,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
 
     case type
     when :UWORD
-      @initials += 1 if word =~ /^-?[[:upper:]]+\b/
+      @initials += 1 if word =~ /^[[:upper:]]+\b/
     when :SUFFIX
       @suffices += 1
     end
@@ -139,7 +139,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
   end
 
   def will_see_initial?
-    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^-?[[:upper:]]+\b/
+    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^[[:upper:]]+\b/
   end
 
   def seen_full_name?
@@ -148,6 +148,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
   end
 
   def next_token
+    p input
     case
     when input.nil?, input.eos?
       nil
@@ -171,7 +172,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
       else
         consume_word(:UWORD, input.matched)
       end
-    when input.scan(/((\\\w+)?\{[^\}]*\})*-?[[:upper:]][^\s#{stops}]*/)
+    when input.scan(/((\\\w+)?\{[^\}]*\})*[[:upper:]][^\s#{stops}]*/)
       consume_word(:UWORD, input.matched)
     when input.scan(/((\\\w+)?\{[^\}]*\})*[[:lower:]][^\s#{stops}]*/)
       consume_word(:LWORD, input.matched)
@@ -181,7 +182,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
       consume_word(:NICK, input.matched[1...-1])
     else
       raise ArgumentError,
-        "Failed to parse name #{input.string.inspect}: unmatched data at offset #{input.pos}"
+        "Failed to parse name #{input.string.inspect}: un-unmatched data at offset #{input.pos}"
     end
   end
 

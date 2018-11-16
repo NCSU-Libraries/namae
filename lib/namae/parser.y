@@ -209,7 +209,7 @@ require 'strscan'
 
     case type
     when :UWORD
-      @initials += 1 if word =~ /^[[:upper:]]+\b/
+      @initials += 1 if word =~ /^-?[[:upper:]]+\b/
     when :SUFFIX
       @suffices += 1
     end
@@ -230,7 +230,7 @@ require 'strscan'
   end
 
   def will_see_initial?
-    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^[[:upper:]]+\b/
+    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^-?[[:upper:]]+\b/
   end
 
   def seen_full_name?
@@ -262,7 +262,7 @@ require 'strscan'
       else
         consume_word(:UWORD, input.matched)
       end
-    when input.scan(/((\\\w+)?\{[^\}]*\})*[[:upper:]][^\s#{stops}]*/)
+    when input.scan(/((\\\w+)?\{[^\}]*\})*-?[[:upper:]][^\s#{stops}]*/)
       consume_word(:UWORD, input.matched)
     when input.scan(/((\\\w+)?\{[^\}]*\})*[[:lower:]][^\s#{stops}]*/)
       consume_word(:LWORD, input.matched)

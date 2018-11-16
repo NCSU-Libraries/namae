@@ -191,6 +191,11 @@ module Namae
             expect(parser.parse!('Bernado Franecki Ph.D.')[0].values_at(:given, :family, :title)).to eq(['Bernado', 'Franecki', 'Ph.D.'])
             #expect(parser.parse!('Bernado Franecki, Ph.D.')[0].values_at(:given, :family, :title)).to eq(['Bernado', 'Franecki', 'Ph.D.'])
           end
+
+          it 'parses hyphenated initials' do
+            expect(parser.parse!('Cai, W. -J.')[0].values_at(:given, :family)).to eq(['W. -J.', 'Cai'])
+            expect(parser.parse!('Cai, Wei-Jin')[0].values_at(:given, :family)).to eq(['Wei-Jin', 'Cai'])
+          end
         end
       end
 

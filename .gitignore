@@ -34,3 +34,6 @@ pkg
 .rbx
 
 .ruby-version
+
+# For Jetbrains products (e.g. RubyMine):
+.idea
