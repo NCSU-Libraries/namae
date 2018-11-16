@@ -30,6 +30,7 @@ Feature: Parse the names in the Readme file
     Scenarios: Readme examples (sort-order)
       | name                         | given        | particle | family           | suffix | title | appellation | nick |
       | Carreño Quiñones, María-Jose | María-Jose   |          | Carreño Quiñones |        |       |             |      |
+      | Cai, W. -J.                  | W. -J.       |          | Cai          |        |           |             |      |
 
     @issues @appellation @nick @suffix
     Scenarios: Nicknames Appellations and Suffices
