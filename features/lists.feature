@@ -52,10 +52,28 @@ Feature: Parse a list of names
     When I parse the names "Kernighan, B., Ritchie, D., Knuth, D."
     Then there should be 3 names
     And the names should be:
-      | given  | family    |
-      | B.     | Kernighan |
-      | D.     | Ritchie   |
-      | D.     | Knuth     |
+      | given       | family             |
+      | B.          | Kernighan          |
+      | D.          | Ritchie            |
+      | D.          | Knuth              |
+#    When I parse the names "Haque, Ariful, Abdullah-Al Mamun, Md, Taufique, M. F. N., Karnati, Priyanka, Ghosh, Kartik"
+#    Then there should be 5 names
+#    And the names should be:
+#      | given       | family             |
+#      | Ariful      | Haque              |
+#      | Md          | Abdullah-Al Mamun  |
+#      | M. F. N.    | Taufique           |
+#      | Priyanka    | Karnati            |
+#      | Kartik      | Ghosh              |
+    When I parse the names "Wang, Po-Min, Lo, Yi-Kai, Patel, Henil A., Chu, Jung Soo, V, Liu, Wentai"
+    Then there should be 5 names
+    And the names should be:
+      | given       | family             |
+      | Po-Min      | Wang               |
+      | Yi-Kai      | Lo                 |
+      | Henil A.    | Patel              |
+      | Jung Soo V  | Chu                |
+      | Wentai      | Liu                |
 
   @list
   Scenario: A list of mixed names separated by commas and 'and'

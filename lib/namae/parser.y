@@ -111,7 +111,7 @@ require 'strscan'
     :comma => ',',
     :stops => ',;',
     :separator => /\s*(\band\b|\&|;)\s*/i,
-    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon|deaconess|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|,|$)/i,
+    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon(ess)?|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|,|$)/i,
     :suffix => /\s*\b(JR|SR|[IVX]{2,})(\.|\b)/i,
     :appellation => /\s*\b((mrs?|ms|fr|hr)\.?|miss|herr|frau)(\s+|$)/i
   }
@@ -184,7 +184,7 @@ require 'strscan'
   end
 
   def reset
-    @commas, @words, @initials, @suffices, @yydebug = 0, 0, 0, 0, debug?
+    @commas, @words, @initials, @suffices, @titles, @yydebug = 0, 0, 0, 0, 0, debug?
     self
   end
 
@@ -200,7 +200,7 @@ require 'strscan'
 
   def consume_separator
     return next_token if seen_separator?
-    @commas, @words, @initials, @suffices = 0, 0, 0, 0
+    @commas, @words, @initials, @suffices, @titles = 0, 0, 0, 0, 0
     [:AND, :AND]
   end
 
@@ -217,6 +217,8 @@ require 'strscan'
       @initials += 1 if word =~ /^-?[[:upper:]]+\b/
     when :SUFFIX
       @suffices += 1
+    when :TITLE
+      @titles += 1
     end
 
     [type, word]
@@ -230,12 +232,24 @@ require 'strscan'
     !@suffices.zero? || will_see_suffix?
   end
 
+  def title?
+    !@titles.zero? || will_see_title?
+  end
+
+  def initial?
+    !@initials.zero? || will_see_initial?
+  end
+
+  def will_see_title?
+    input.peek(12).to_s.strip.split(/\s+/)[0] =~ title
+  end
+
   def will_see_suffix?
     input.peek(8).to_s.strip.split(/\s+/)[0] =~ suffix
   end
 
   def will_see_initial?
-    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^-?[[:upper:]]+\b/
+    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^\b-?[[:upper:]]\.?\b/
   end
 
   def seen_full_name?
@@ -250,7 +264,8 @@ require 'strscan'
     when input.scan(separator)
       consume_separator
     when input.scan(/\s*#{comma}\s*/)
-      if @commas.zero? && !seen_full_name? || @commas == 1 && suffix?
+      #TODO: Need to dissect this....
+      if @commas.zero? && !seen_full_name? || @commas == 1 && suffix? || @commas == 1 && initial? || @commas == 1 && title?
         consume_comma
       else
         consume_separator
