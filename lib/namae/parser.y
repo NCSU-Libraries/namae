@@ -97,7 +97,7 @@ rule
   opt_titles : /* empty */ | titles
 
   titles : TITLE
-         | titles TITLE { result = val.join(' ') }
+         | titles TITLE { result = val.join(', ') }
 
 ---- header
 require 'strscan'
@@ -111,7 +111,7 @@ require 'strscan'
     :comma => ',',
     :stops => ',;',
     :separator => /\s*(\band\b|\&|;)\s*/i,
-    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon(ess)?|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|,|$)/i,
+    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon(ess)?|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|$|(?=,))/i,
     :suffix => /\s*\b(JR|SR|[IVX]{2,})(\.|\b)/i,
     :appellation => /\s*\b((mrs?|ms|fr|hr)\.?|miss|herr|frau)(\s+|$)/i
   }
@@ -232,16 +232,9 @@ require 'strscan'
     !@suffices.zero? || will_see_suffix?
   end
 
-  def title?
-    !@titles.zero? || will_see_title?
-  end
-
-  def initial?
-    !@initials.zero? || will_see_initial?
-  end
-
   def will_see_title?
-    input.peek(12).to_s.strip.split(/\s+/)[0] =~ title
+    peek = input.peek(12).to_s.strip.split(/\s+/)[0]
+    peek =~ title and !muhammed?(peek)
   end
 
   def will_see_suffix?
@@ -254,7 +247,15 @@ require 'strscan'
 
   def seen_full_name?
     prefer_comma_as_separator? && @words > 1 &&
-      (@initials > 0 || !will_see_initial?) && !will_see_suffix?
+      (@initials > 0 || !will_see_initial?) && !will_see_suffix? && !will_see_muhammed?
+  end
+
+  def muhammed?(string)
+    string =~ /Md,?/ and prefer_muhammad_abbreviation?
+  end
+
+  def will_see_muhammed?
+    muhammed? input.peek(6).to_s.strip
   end
 
   def next_token
@@ -264,8 +265,13 @@ require 'strscan'
     when input.scan(separator)
       consume_separator
     when input.scan(/\s*#{comma}\s*/)
-      #TODO: Need to dissect this....
-      if @commas.zero? && !seen_full_name? || @commas == 1 && suffix? || @commas == 1 && initial? || @commas == 1 && title?
+      # TODO: Clean this up
+      # If there are no initials and
+      if will_see_title?
+        next_token
+      elsif @initials.zero? and will_see_initial?
+        @commas.zero? ? consume_comma : next_token
+      elsif @commas.zero? && !seen_full_name? || @commas == 1 && suffix?
         consume_comma
       else
         consume_separator
@@ -275,7 +281,7 @@ require 'strscan'
     when input.scan(title)
       matched = input.matched.strip
       # Checks for common Muhammad abbreviation "Md"
-      if matched == 'Md' and prefer_muhammad_abbreviation?
+      if muhammed?(matched)
         consume_word(:PWORD, matched)
       else
         consume_word(:TITLE, matched)

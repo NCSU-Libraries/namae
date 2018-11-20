@@ -54,14 +54,14 @@ Feature: Parse BibTeX-style names
     | BB cc dd CC, AA | AA         | BB cc dd   | CC      |    |
     | BB CC dd CC, AA | AA         | BB CC dd   | CC      |    |
 
-  @names 
+  @names
   Scenarios: Decoret further remarks
     | name                               | first                | von            | last                    | jr |
     | Dominique Galouzeau de Villepin    | Dominique Galouzeau  | de             | Villepin                |    |
     | Dominique {G}alouzeau de Villepin  | Dominique            | {G}alouzeau de | Villepin                |    |
     | Galouzeau {de} Villepin, Dominique | Dominique            |                | Galouzeau {de} Villepin |    |
 
-  @names 
+  @names
   Scenarios: Some actual names
     | name                              | first                   | von            | last                           | jr  |
     | John Paul Jones                   | John Paul               |                | Jones                          |     |
