@@ -20,7 +20,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
     :comma => ',',
     :stops => ',;',
     :separator => /\s*(\band\b|\&|;)\s*/i,
-    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon|deaconess|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|,|$)/i,
+    :title => /\s*\b(sir|lord|count(ess)?|(gen|adm|col|maj|capt|cmdr|lt|sgt|cpl|pvt|pastor|pr|reverend|rev|elder|deacon(ess)?|father|fr|rabbi|cantor|vicar|esq|prof|dr|md|m\.?p\.?h|ph\.?d)\.?)(\s+|$|(?=,))/i,
     :suffix => /\s*\b(JR|SR|[IVX]{2,})(\.|\b)/i,
     :appellation => /\s*\b((mrs?|ms|fr|hr)\.?|miss|herr|frau)(\s+|$)/i
   }
@@ -93,7 +93,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
   end
 
   def reset
-    @commas, @words, @initials, @suffices, @yydebug = 0, 0, 0, 0, debug?
+    @commas, @words, @initials, @suffices, @titles, @yydebug = 0, 0, 0, 0, 0, debug?
     self
   end
 
@@ -109,7 +109,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
 
   def consume_separator
     return next_token if seen_separator?
-    @commas, @words, @initials, @suffices = 0, 0, 0, 0
+    @commas, @words, @initials, @suffices, @titles = 0, 0, 0, 0, 0
     [:AND, :AND]
   end
 
@@ -126,6 +126,8 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
       @initials += 1 if word =~ /^-?[[:upper:]]+\b/
     when :SUFFIX
       @suffices += 1
+    when :TITLE
+      @titles += 1
     end
 
     [type, word]
@@ -139,17 +141,30 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
     !@suffices.zero? || will_see_suffix?
   end
 
+  def will_see_title?
+    peek = input.peek(12).to_s.strip.split(/\s+/)[0]
+    peek =~ title and !muhammed?(peek)
+  end
+
   def will_see_suffix?
     input.peek(8).to_s.strip.split(/\s+/)[0] =~ suffix
   end
 
   def will_see_initial?
-    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^-?[[:upper:]]+\b/
+    input.peek(6).to_s.strip.split(/\s+/)[0] =~ /^\b-?[[:upper:]]\.?\b/
   end
 
   def seen_full_name?
     prefer_comma_as_separator? && @words > 1 &&
-      (@initials > 0 || !will_see_initial?) && !will_see_suffix?
+      (@initials > 0 || !will_see_initial?) && !will_see_suffix? && !will_see_muhammed?
+  end
+
+  def muhammed?(string)
+    string =~ /Md,?/ and prefer_muhammad_abbreviation?
+  end
+
+  def will_see_muhammed?
+    muhammed? input.peek(6).to_s.strip
   end
 
   def next_token
@@ -159,7 +174,13 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
     when input.scan(separator)
       consume_separator
     when input.scan(/\s*#{comma}\s*/)
-      if @commas.zero? && !seen_full_name? || @commas == 1 && suffix?
+      # TODO: Clean this up
+      # If there are no initials and
+      if will_see_title?
+        next_token
+      elsif @initials.zero? and will_see_initial?
+        @commas.zero? ? consume_comma : next_token
+      elsif @commas.zero? && !seen_full_name? || @commas == 1 && suffix?
         consume_comma
       else
         consume_separator
@@ -169,7 +190,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
     when input.scan(title)
       matched = input.matched.strip
       # Checks for common Muhammad abbreviation "Md"
-      if matched == 'Md' and prefer_muhammad_abbreviation?
+      if muhammed?(matched)
         consume_word(:PWORD, matched)
       else
         consume_word(:TITLE, matched)
@@ -642,7 +663,7 @@ module_eval(<<'.,.,', 'parser.y', 94)
 
 module_eval(<<'.,.,', 'parser.y', 99)
   def _reduce_48(val, _values, result)
-     result = val.join(' ') 
+     result = val.join(', ') 
     result
   end
 .,.,
