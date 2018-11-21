@@ -175,7 +175,6 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 106)
       consume_separator
     when input.scan(/\s*#{comma}\s*/)
       # TODO: Clean this up
-      # If there are no initials and
       if will_see_title?
         next_token
       elsif @initials.zero? and will_see_initial?
